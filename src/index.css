@@ -1,0 +1,160 @@
+/* Hebrew handwriting font: Dana Yad */
+@font-face {
+  font-family: 'DanaYad';
+  src: url('/fonts/DanaYadAlefAlefAlef-Normal.woff') format('woff'),
+       url('/fonts/DanaYadAlefAlefAlef-Normal.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-sand font-sans text-gray-800 antialiased;
+    overscroll-behavior: none;
+  }
+
+  /* Hebrew text always RTL */
+  .hebrew {
+    direction: rtl;
+    font-family: 'Frank Ruhl Libre', serif;
+    unicode-bidi: bidi-override;
+  }
+
+  /* Hebrew handwriting font */
+  .hebrew-handwriting {
+    direction: rtl;
+    font-family: 'DanaYad', 'Frank Ruhl Libre', serif;
+    unicode-bidi: bidi-override;
+  }
+
+  /* Chinese text */
+  .chinese {
+    font-family: 'Noto Sans SC', sans-serif;
+  }
+}
+
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/50 rounded-2xl shadow-lg;
+  }
+
+  .glass-card-dark {
+    @apply bg-deep-blue/80 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-sky-blue to-deep-blue bg-clip-text text-transparent;
+  }
+
+  .gradient-text-gold {
+    @apply bg-gradient-to-r from-gold to-yellow-600 bg-clip-text text-transparent;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply bg-gradient-to-r from-sky-blue to-deep-blue text-white font-semibold py-3 px-6 rounded-xl
+           shadow-lg shadow-sky-blue/30 active:scale-95 transition-all duration-150
+           hover:shadow-sky-blue/50 hover:brightness-110;
+  }
+
+  /* Gold button */
+  .btn-gold {
+    @apply bg-gradient-to-r from-gold to-yellow-500 text-white font-semibold py-3 px-6 rounded-xl
+           shadow-lg shadow-gold/30 active:scale-95 transition-all duration-150;
+  }
+
+  /* Topic badge */
+  .topic-badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white;
+  }
+
+  /* Difficulty badge */
+  .difficulty-beginner { @apply bg-emerald-500 text-white text-xs px-2 py-0.5 rounded-full font-medium; }
+  .difficulty-intermediate { @apply bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full font-medium; }
+  .difficulty-advanced { @apply bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full font-medium; }
+
+  /* Bottom nav */
+  .nav-tab {
+    @apply flex flex-col items-center gap-0.5 py-2 px-4 text-xs font-medium text-gray-500
+           transition-colors duration-150;
+  }
+  .nav-tab.active {
+    @apply text-deep-blue;
+  }
+}
+
+@layer utilities {
+  /* Card flip animation */
+  .flip-card {
+    perspective: 1200px;
+  }
+
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  .flip-card-inner.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-front,
+  .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
+
+  /* Audio pulse ring */
+  .audio-ring {
+    @apply absolute inset-0 rounded-full animate-ping opacity-40;
+  }
+
+  /* Swipe hints */
+  .swipe-hint-left {
+    @apply text-red-500 font-bold text-lg;
+  }
+  .swipe-hint-right {
+    @apply text-emerald-500 font-bold text-lg;
+  }
+
+  /* Safe area for mobile */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-sky-blue/30 rounded-full;
+}
