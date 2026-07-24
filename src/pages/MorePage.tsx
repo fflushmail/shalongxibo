@@ -1,10 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useProgress } from '../contexts/ProgressContext'
-import { VOCABULARY, TOPIC_META } from '../data/vocabulary'
+import { VOCABULARY } from '../data/vocabulary'
 
-// ← Replace this URL with your actual Buy Me a Coffee link when ready
-const BUY_ME_COFFEE_URL = '' // e.g. 'https://www.buymeacoffee.com/yourusername'
+const BUY_ME_COFFEE_URL = '' // Set your Buy Me a Coffee URL here
 
 export default function MorePage() {
   const navigate = useNavigate()
@@ -13,12 +12,12 @@ export default function MorePage() {
 
   const MENU_ITEMS = [
     {
-      id: 'topics',
-      icon: '📂',
-      label: '分类目录',
-      sublabel: 'Browse Topics',
+      id: 'dialogues',
+      icon: '💬',
+      label: '实用对话',
+      sublabel: 'Daily Scenarios',
       color: 'from-sky-blue to-deep-blue',
-      onClick: () => navigate('/topics'),
+      onClick: () => navigate('/dialogues'),
     },
     {
       id: 'alphabet',
@@ -50,42 +49,53 @@ export default function MorePage() {
     <div className="min-h-full flex flex-col bg-sand">
       {/* Header */}
       <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 pt-12 pb-6 safe-top">
-        <h1 className="chinese text-white font-black text-2xl">☰ 更多</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="chinese text-white font-black text-2xl">☰ 更多</h1>
+          {/* Login always accessible in header */}
+          <button
+            onClick={() => navigate(user ? '/profile' : '/login')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-sm chinese active:scale-95 transition-all"
+          >
+            {user?.photoURL ? (
+              <img
+                src={user.photoURL} alt="" referrerPolicy="no-referrer"
+                className="w-6 h-6 rounded-full object-cover"
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
+              />
+            ) : null}
+            <span>{user ? (user.displayName?.split(' ')[0] || '我的') : '登录 / 注册'}</span>
+            {!user && <span>🔑</span>}
+          </button>
+        </div>
         {user && (
-          <p className="chinese text-white/70 text-sm mt-1">
-            你好，{user.displayName || user.email?.split('@')[0] || '朋友'} 👋
-          </p>
+          <p className="chinese text-white/70 text-sm mt-1">你好，{user.displayName || user.email?.split('@')[0] || '朋友'} 👋</p>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
 
         {/* Stats mini card */}
-        <div className="glass-card p-4 flex items-center gap-4 mb-2">
+        <div className="glass-card p-4 flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-deep-blue to-sky-blue flex items-center justify-center text-white font-black text-lg flex-shrink-0">
             {totalLearned}
           </div>
           <div>
-            <p className="chinese font-bold text-gray-800">
-              已学 {totalLearned} / {VOCABULARY.length} 词
-            </p>
-            <p className="chinese text-gray-400 text-sm">
-              {Math.round((totalLearned / VOCABULARY.length) * 100)}% 完成
-            </p>
+            <p className="chinese font-bold text-gray-800">已学 {totalLearned} / {VOCABULARY.length} 词</p>
+            <p className="chinese text-gray-400 text-sm">{Math.round((totalLearned / VOCABULARY.length) * 100)}% 完成</p>
           </div>
-          <button onClick={() => navigate('/profile')} className="ml-auto text-sky-blue text-sm chinese">
+          <button onClick={() => navigate('/profile')} className="ml-auto text-sky-blue text-sm chinese flex-shrink-0">
             详情 →
           </button>
         </div>
 
-        {/* Main menu items */}
+        {/* Menu items */}
         {MENU_ITEMS.map(item => (
           <button
             key={item.id}
             id={`more-${item.id}-btn`}
             onClick={item.onClick}
             className="w-full flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm
-                       active:scale-[0.98] transition-all text-left border border-gray-50 hover:border-sky-blue/20"
+                       active:scale-[0.98] transition-all text-left border border-gray-50"
           >
             <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center text-2xl flex-shrink-0 shadow-md`}>
               {item.icon}
@@ -105,23 +115,17 @@ export default function MorePage() {
                      active:scale-[0.98] transition-all text-left border border-gray-50"
         >
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-2xl flex-shrink-0 shadow-md overflow-hidden">
-          {user?.photoURL ? (
+            {user?.photoURL ? (
               <img
-                src={user.photoURL}
-                alt=""
-                referrerPolicy="no-referrer"
+                src={user.photoURL} alt="" referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  const t = e.currentTarget
-                  t.style.display = 'none'
-                  t.parentElement!.textContent = '👤'
-                }}
+                onError={(e) => { e.currentTarget.style.display = 'none' }}
               />
             ) : '👤'}
           </div>
           <div>
             <p className="chinese font-bold text-gray-800">{user ? '个人资料' : '登录 / 注册'}</p>
-            <p className="text-gray-400 text-sm">{user ? user.email : 'Sign in to sync progress'}</p>
+            <p className="text-gray-400 text-sm">{user ? user.email : '点击登录或注册账号'}</p>
           </div>
           <span className="ml-auto text-gray-300 text-xl">›</span>
         </button>
@@ -135,20 +139,12 @@ export default function MorePage() {
               <p className="text-gray-600 text-sm">支持沙龙希伯继续免费！</p>
             </div>
             {BUY_ME_COFFEE_URL ? (
-              <a
-                href={BUY_ME_COFFEE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                id="buy-coffee-btn"
-                className="bg-[#FF813F] text-white font-bold px-4 py-2 rounded-xl text-sm
-                           active:scale-95 transition-all flex-shrink-0"
-              >
+              <a href={BUY_ME_COFFEE_URL} target="_blank" rel="noopener noreferrer"
+                className="bg-[#FF813F] text-white font-bold px-4 py-2 rounded-xl text-sm active:scale-95 transition-all flex-shrink-0">
                 支持 ❤️
               </a>
             ) : (
-              <span className="text-gray-400 text-xs chinese flex-shrink-0 text-right">
-                即将<br/>开放
-              </span>
+              <span className="text-gray-400 text-xs chinese flex-shrink-0 text-right">即将<br/>开放</span>
             )}
           </div>
         </div>
@@ -163,7 +159,6 @@ export default function MorePage() {
           </button>
         )}
 
-        {/* App version */}
         <p className="text-center text-gray-300 text-xs chinese pb-2">
           沙龙希伯 v1.0 · 为在以色列的中国朋友而制作 🇮🇱🇨🇳
         </p>

@@ -3,8 +3,8 @@ import { NavLink } from 'react-router-dom'
 const TABS = [
   { to: '/',          icon: '🏠', label: '首页'   },
   { to: '/cards',     icon: '🃏', label: '单词卡'  },
+  { to: '/games',     icon: '🎮', label: '游戏'   },
   { to: '/quiz',      icon: '🧠', label: '测验'   },
-  { to: '/alphabet',  icon: '📖', label: '字母表'  },
   { to: '/more',      icon: '☰',  label: '更多'   },
 ]
 
