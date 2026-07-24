@@ -10,7 +10,7 @@ export default {
         'deep-blue': '#1A4B8C',
         'sky-blue': '#4A90D9',
         'gold': '#C9A84C',
-        'sand': '#F5F0E8',
+        'sand': '#F8FAFC',
         'sand-dark': '#EDE5D8',
       },
       fontFamily: {

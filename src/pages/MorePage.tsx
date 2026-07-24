@@ -31,17 +31,9 @@ export default function MorePage() {
       id: 'community',
       icon: '🌐',
       label: '学习社区',
-      sublabel: 'WhatsApp & WeChat',
+      sublabel: 'WhatsApp Group',
       color: 'from-[#25D366] to-[#128C7E]',
       onClick: () => navigate('/community'),
-    },
-    {
-      id: 'suggest',
-      icon: '💡',
-      label: '建议新词汇',
-      sublabel: 'Suggest a Word',
-      color: 'from-gold to-yellow-600',
-      onClick: () => navigate('/suggest'),
     },
   ]
 
@@ -51,10 +43,10 @@ export default function MorePage() {
       <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 pt-12 pb-6 safe-top">
         <div className="flex items-center justify-between">
           <h1 className="chinese text-white font-black text-2xl">☰ 更多</h1>
-          {/* Login always accessible in header */}
+          {/* Login always in header */}
           <button
             onClick={() => navigate(user ? '/profile' : '/login')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-sm chinese active:scale-95 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-sm chinese active:scale-95 transition-all hover:bg-white/30"
           >
             {user?.photoURL ? (
               <img
@@ -68,7 +60,9 @@ export default function MorePage() {
           </button>
         </div>
         {user && (
-          <p className="chinese text-white/70 text-sm mt-1">你好，{user.displayName || user.email?.split('@')[0] || '朋友'} 👋</p>
+          <p className="chinese text-white/70 text-sm mt-1">
+            你好，{user.displayName || user.email?.split('@')[0] || '朋友'} 👋
+          </p>
         )}
       </div>
 
@@ -95,7 +89,7 @@ export default function MorePage() {
             id={`more-${item.id}-btn`}
             onClick={item.onClick}
             className="w-full flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm
-                       active:scale-[0.98] transition-all text-left border border-gray-50"
+                       hover:shadow-md hover:bg-gray-50 active:scale-[0.98] transition-all text-left border border-gray-100"
           >
             <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center text-2xl flex-shrink-0 shadow-md`}>
               {item.icon}
@@ -108,27 +102,23 @@ export default function MorePage() {
           </button>
         ))}
 
-        {/* Profile / Login */}
-        <button
-          onClick={() => navigate(user ? '/profile' : '/login')}
-          className="w-full flex items-center gap-4 p-4 bg-white rounded-2xl shadow-sm
-                     active:scale-[0.98] transition-all text-left border border-gray-50"
-        >
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-2xl flex-shrink-0 shadow-md overflow-hidden">
-            {user?.photoURL ? (
-              <img
-                src={user.photoURL} alt="" referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-                onError={(e) => { e.currentTarget.style.display = 'none' }}
-              />
-            ) : '👤'}
-          </div>
+        {/* Community tip — replaces the "Suggest a Word" menu item */}
+        <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-start gap-3">
+          <span className="text-2xl flex-shrink-0">💡</span>
           <div>
-            <p className="chinese font-bold text-gray-800">{user ? '个人资料' : '登录 / 注册'}</p>
-            <p className="text-gray-400 text-sm">{user ? user.email : '点击登录或注册账号'}</p>
+            <p className="chinese font-bold text-gray-800 text-sm mb-1">想建议新词汇？</p>
+            <p className="chinese text-gray-600 text-sm leading-relaxed">
+              在我们的 WhatsApp 学习群里提问就好！
+              群里有管理员，大家一起帮你找答案。
+            </p>
+            <button
+              onClick={() => navigate('/community')}
+              className="mt-2 text-[#25D366] text-sm chinese font-semibold"
+            >
+              加入 WhatsApp 群 →
+            </button>
           </div>
-          <span className="ml-auto text-gray-300 text-xl">›</span>
-        </button>
+        </div>
 
         {/* Buy Me a Coffee */}
         <div className="bg-[#FFDD00] rounded-2xl overflow-hidden">
@@ -153,7 +143,7 @@ export default function MorePage() {
         {user && (
           <button
             onClick={async () => { await signOut(); navigate('/') }}
-            className="w-full py-3 rounded-2xl text-red-500 bg-red-50 border border-red-100 chinese font-medium active:scale-95 transition-all"
+            className="w-full py-3 rounded-2xl text-red-500 bg-red-50 border border-red-100 chinese font-medium active:scale-95 transition-all hover:bg-red-100"
           >
             退出登录
           </button>
