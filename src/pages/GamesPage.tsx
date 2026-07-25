@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { VOCABULARY } from '../data/vocabulary'
 
@@ -23,7 +23,6 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
   const [qIndex, setQIndex] = useState(0)
   const [playerScore, setPlayerScore] = useState(0)
   const [aiScore, setAiScore] = useState(0)
-  const [choices, setChoices] = useState<string[]>([])
   const [answered, setAnswered] = useState<'correct' | 'wrong' | null>(null)
   const [aiAnswered, setAiAnswered] = useState<'correct' | 'wrong' | null>(null)
   const [winner, setWinner] = useState<'player' | 'ai' | null>(null)
@@ -32,18 +31,17 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
 
   const currentWord = words[qIndex % words.length]
 
+  // Compute choices deterministically from qIndex — no useState lag
+  const choices = useMemo(() => {
+    if (!currentWord) return []
+    return buildChoices(currentWord.hanzi, allHanzi)
+  }, [qIndex])
+
   const nextQuestion = useCallback(() => {
     setAnswered(null)
     setAiAnswered(null)
     setQIndex(i => i + 1)
   }, [])
-
-  // Build choices when word changes
-  useEffect(() => {
-    if (phase === 'playing' && currentWord) {
-      setChoices(buildChoices(currentWord.hanzi, allHanzi))
-    }
-  }, [qIndex, phase])
 
   // Countdown
   useEffect(() => {
@@ -53,14 +51,14 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
     return () => clearTimeout(t)
   }, [phase, countdown])
 
-  // AI behavior: responds in 1.5–3.5s with 80% accuracy
+  // AI behavior
   useEffect(() => {
     if (phase !== 'playing' || answered !== null) return
     if (aiTimerRef.current) clearTimeout(aiTimerRef.current)
     const delay = 1500 + Math.random() * 2000
     const aiCorrect = Math.random() < 0.78
     aiTimerRef.current = setTimeout(() => {
-      if (answered !== null) return // player already answered
+      if (answered !== null) return
       setAiAnswered(aiCorrect ? 'correct' : 'wrong')
       if (aiCorrect) {
         setAiScore(s => {
@@ -69,7 +67,7 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
           return next
         })
       }
-      setTimeout(nextQuestion, 700)
+      setTimeout(nextQuestion, 800)
     }, delay)
     return () => { if (aiTimerRef.current) clearTimeout(aiTimerRef.current) }
   }, [qIndex, phase, answered])
@@ -86,7 +84,7 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
         return next
       })
     }
-    setTimeout(nextQuestion, 700)
+    setTimeout(nextQuestion, 900)
   }
 
   const restart = () => {
@@ -95,7 +93,6 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
     setAnswered(null); setAiAnswered(null); setWinner(null)
   }
 
-  // ── COUNTDOWN SCREEN ─────────────────────────────────────────────────────
   if (phase === 'countdown') return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-6">
       <div className="text-6xl mb-2">⚡</div>
@@ -111,7 +108,6 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
     </div>
   )
 
-  // ── RESULT SCREEN ────────────────────────────────────────────────────────
   if (phase === 'result') return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-5">
       <div className="text-7xl">{winner === 'player' ? '🏆' : '🤖'}</div>
@@ -129,21 +125,15 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
           <p className="chinese text-gray-500 text-sm">🤖 AI</p>
         </div>
       </div>
-      {winner === 'player' && (
-        <p className="chinese text-emerald-600 text-sm">太棒了！你比 AI 反应更快！</p>
-      )}
-      {winner === 'ai' && (
-        <p className="chinese text-gray-500 text-sm">别灰心！再练练，你一定能赢！</p>
-      )}
+      {winner === 'player' && <p className="chinese text-emerald-600 text-sm">太棒了！你比 AI 反应更快！</p>}
+      {winner === 'ai' && <p className="chinese text-gray-500 text-sm">别灰心！再练练，你一定能赢！</p>}
       <button onClick={restart} className="btn-primary chinese w-full max-w-xs">🔄 再来一局</button>
       <button onClick={onBack} className="text-gray-400 chinese text-sm">← 返回游戏菜单</button>
     </div>
   )
 
-  // ── PLAYING SCREEN ───────────────────────────────────────────────────────
   return (
     <div className="flex-1 flex flex-col">
-      {/* Score header */}
       <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-100">
         <div className="text-center">
           <p className="text-2xl font-black text-deep-blue">{playerScore}</p>
@@ -165,9 +155,7 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      {/* Word */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 gap-5">
-        {/* AI status */}
         <div className={`text-xs px-3 py-1 rounded-full chinese transition-all ${
           aiAnswered === 'correct' ? 'bg-blue-100 text-blue-600' :
           aiAnswered === 'wrong' ? 'bg-red-100 text-red-500' : 'bg-gray-100 text-gray-400'
@@ -176,22 +164,20 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
            aiAnswered === 'wrong' ? '🤖 AI 答错了！' : '🤖 AI 正在思考...'}
         </div>
 
-        {/* Hebrew word in center */}
         <div className="w-full bg-gradient-to-br from-deep-blue to-sky-blue rounded-3xl p-8 text-center shadow-2xl shadow-deep-blue/20">
           <p className="text-white/60 text-xs chinese mb-3">这个词是什么意思？</p>
           <p className="hebrew text-5xl font-black text-white mb-3 leading-tight">{currentWord?.hebrew}</p>
           <p className="text-sky-blue/80 text-lg">{currentWord?.romanized}</p>
-          {currentWord?.hanziPhonetic?.trim().length > 1 && (
-            <p className="chinese text-gold/80 text-lg mt-1">{currentWord.hanziPhonetic}</p>
+          {(currentWord?.hanziPhonetic?.trim().length ?? 0) > 1 && (
+            <p className="chinese text-gold/80 text-lg mt-1">{currentWord?.hanziPhonetic}</p>
           )}
         </div>
 
-        {/* 4 choice buttons */}
         <div className="grid grid-cols-2 gap-3 w-full">
           {choices.map((choice, i) => {
             const isCorrect = choice === currentWord?.hanzi
             const isSelected = answered !== null
-            let cls = 'bg-white border-2 border-gray-100 text-gray-800'
+            let cls = 'bg-white border-2 border-gray-100 text-gray-800 hover:border-sky-blue/50'
             if (isSelected) {
               if (isCorrect) cls = 'bg-emerald-500 border-emerald-500 text-white scale-[1.03]'
               else cls = 'bg-gray-100 border-gray-200 text-gray-400'
@@ -209,7 +195,6 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
             )
           })}
         </div>
-
         <p className="chinese text-gray-300 text-xs">快点！AI 也在答题</p>
       </div>
     </div>
@@ -217,84 +202,110 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
 }
 
 // ── WORD MARATHON GAME ────────────────────────────────────────────────────────
+const QUESTION_TIME = 8   // seconds each question stays before auto-advance
+const FEEDBACK_DELAY = 1800 // ms of result display before moving on
+
 function WordMarathon({ onBack }: { onBack: () => void }) {
-  const words = shuffle(VOCABULARY).slice(0, 60)
-  const allHanzi = VOCABULARY.map(w => w.hanzi)
+  // Shuffle words once on mount, stable ref
+  const words = useRef(shuffle(VOCABULARY).slice(0, 80)).current
+  const allHanzi = useMemo(() => VOCABULARY.map(w => w.hanzi), [])
 
   type Phase = 'ready' | 'playing' | 'result'
   const [phase, setPhase] = useState<Phase>('ready')
   const [qIndex, setQIndex] = useState(0)
-  const [timeLeft, setTimeLeft] = useState(60)
-  const [distance, setDistance] = useState(0) // 0–100
+  const [timeLeft, setTimeLeft] = useState(60)         // overall 60-sec timer
+  const [qTimeLeft, setQTimeLeft] = useState(QUESTION_TIME) // per-question timer
+  const [distance, setDistance] = useState(0)
   const [streak, setStreak] = useState(0)
-  const [choices, setChoices] = useState<string[]>([])
-  const [answered, setAnswered] = useState<string | null>(null)
-  const [paused, setPaused] = useState(false) // wrong-answer pause
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [answered, setAnswered] = useState<string | null>(null)  // which choice was picked
+  const [transitioning, setTransitioning] = useState(false)       // locked during feedback
   const MAX_DIST = 100
 
   const currentWord = words[qIndex % words.length]
 
-  useEffect(() => {
-    if (currentWord) {
-      setChoices(buildChoices(currentWord.hanzi, allHanzi))
-    }
-  }, [qIndex])
+  // ── Choices computed in sync with currentWord — no useEffect lag ──
+  const choices = useMemo(() => {
+    if (!currentWord) return []
+    return buildChoices(currentWord.hanzi, allHanzi)
+  }, [qIndex, allHanzi])
 
-  // 60-second countdown
+  const goNextQuestion = useCallback(() => {
+    setAnswered(null)
+    setTransitioning(false)
+    setQTimeLeft(QUESTION_TIME)
+    setQIndex(i => i + 1)
+  }, [])
+
+  // Overall 60-second countdown (pauses during feedback transition)
   useEffect(() => {
-    if (phase !== 'playing' || paused) return
+    if (phase !== 'playing' || transitioning) return
     if (timeLeft <= 0) { setPhase('result'); return }
-    timerRef.current = setTimeout(() => setTimeLeft(t => t - 1), 1000)
-    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
-  }, [phase, timeLeft, paused])
+    const t = setTimeout(() => setTimeLeft(s => s - 1), 1000)
+    return () => clearTimeout(t)
+  }, [phase, timeLeft, transitioning])
+
+  // Per-question countdown (resets when question changes)
+  useEffect(() => {
+    if (phase !== 'playing' || transitioning) return
+    if (qTimeLeft <= 0) {
+      // Time's up for this question — count as wrong, brief pause
+      setAnswered('__timeout__')
+      setTransitioning(true)
+      setStreak(0)
+      setTimeout(goNextQuestion, FEEDBACK_DELAY)
+      return
+    }
+    const t = setTimeout(() => setQTimeLeft(s => s - 1), 1000)
+    return () => clearTimeout(t)
+  }, [phase, qTimeLeft, transitioning])
 
   const handleChoice = (choice: string) => {
-    if (answered || phase !== 'playing') return
+    if (answered || phase !== 'playing' || transitioning) return
     const correct = choice === currentWord.hanzi
     setAnswered(choice)
+    setTransitioning(true)
 
     if (correct) {
       const newDist = Math.min(distance + 5, MAX_DIST)
       setDistance(newDist)
       setStreak(s => s + 1)
-      if (newDist >= MAX_DIST) { setPhase('result'); return }
-      setTimeout(() => { setAnswered(null); setQIndex(i => i + 1) }, 500)
+      if (newDist >= MAX_DIST) {
+        setTimeout(() => setPhase('result'), FEEDBACK_DELAY)
+        return
+      }
     } else {
       setStreak(0)
-      setPaused(true)
-      setTimeout(() => {
-        setPaused(false)
-        setAnswered(null)
-        setQIndex(i => i + 1)
-      }, 1200)
     }
+    setTimeout(goNextQuestion, FEEDBACK_DELAY)
   }
 
   const restart = () => {
-    setPhase('ready'); setQIndex(0); setTimeLeft(60)
-    setDistance(0); setStreak(0); setAnswered(null); setPaused(false)
+    setPhase('ready'); setQIndex(0); setTimeLeft(60); setQTimeLeft(QUESTION_TIME)
+    setDistance(0); setStreak(0); setAnswered(null); setTransitioning(false)
   }
 
   const distancePct = (distance / MAX_DIST) * 100
+  const qTimePct = (qTimeLeft / QUESTION_TIME) * 100
 
-  // Runner emoji based on state
-  const runnerEmoji = paused ? '😵' : streak >= 5 ? '🔥' : '🏃'
+  const runnerEmoji = (answered && answered !== currentWord.hanzi) ? '😵'
+    : streak >= 5 ? '🔥' : '🏃'
 
-  // Grade based on distance
-  const grade = distance >= 90 ? '🥇 冠军!' : distance >= 70 ? '🥈 很棒!' : distance >= 50 ? '🥉 不错!' : '💪 继续练!'
+  const grade = distance >= 90 ? '🥇 冠军!' : distance >= 70 ? '🥈 很棒!'
+    : distance >= 50 ? '🥉 不错!' : '💪 继续练!'
 
-  // ── READY SCREEN ─────────────────────────────────────────────────────────
+  const timerColor = timeLeft <= 10 ? 'text-red-500' : timeLeft <= 20 ? 'text-amber-500' : 'text-[#0F172A]'
+
+  // ── READY ─────────────────────────────────────────────────────────────────
   if (phase === 'ready') return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-6">
       <div className="text-6xl">🏃</div>
       <h2 className="chinese font-black text-deep-blue text-2xl">单词马拉松</h2>
       <div className="glass-card p-5 w-full text-left space-y-2">
         {[
-          '⏱️ 60秒限时答题',
-          '✅ 答对 → 小人向前跑',
-          '❌ 答错 → 小人暂停一下',
-          '🏁 跑满100米 → 提前通关！',
+          `⏱️ 60秒总时间，每题最多 ${QUESTION_TIME} 秒`,
+          '✅ 答对 → 小人向前跑 5 米',
+          '❌ 答错或超时 → 跑道暂停',
+          '🏁 跑满 100 米 → 提前通关！',
         ].map((rule, i) => (
           <p key={i} className="chinese text-gray-600 text-sm">{rule}</p>
         ))}
@@ -305,7 +316,7 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
     </div>
   )
 
-  // ── RESULT SCREEN ─────────────────────────────────────────────────────────
+  // ── RESULT ─────────────────────────────────────────────────────────────────
   if (phase === 'result') return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-5">
       <div className="text-6xl">{grade.split(' ')[0]}</div>
@@ -320,31 +331,27 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
           <p className="chinese text-gray-500 text-sm">答题数</p>
         </div>
       </div>
-      {/* Final track */}
       <div className="w-full bg-gray-100 rounded-full h-5 overflow-hidden relative">
-        <div
-          className="h-full bg-gradient-to-r from-sky-blue to-deep-blue rounded-full transition-all duration-700"
-          style={{ width: `${distancePct}%` }}
-        />
-        <span className="absolute" style={{ left: `${Math.min(distancePct, 90)}%`, top: '-2px', fontSize: '1.4rem' }}>
-          🏃
-        </span>
+        <div className="h-full bg-gradient-to-r from-sky-blue to-deep-blue rounded-full transition-all duration-700"
+          style={{ width: `${distancePct}%` }} />
+        <span className="absolute" style={{ left: `${Math.min(distancePct, 88)}%`, top: '-2px', fontSize: '1.4rem' }}>🏃</span>
       </div>
       <button onClick={restart} className="btn-primary chinese w-full max-w-xs">🔄 再跑一次</button>
       <button onClick={onBack} className="text-gray-400 chinese text-sm">← 返回游戏菜单</button>
     </div>
   )
 
-  // ── PLAYING SCREEN ────────────────────────────────────────────────────────
-  const timerColor = timeLeft <= 10 ? 'text-red-500' : timeLeft <= 20 ? 'text-amber-500' : 'text-deep-blue'
+  // ── PLAYING ────────────────────────────────────────────────────────────────
+  const isAnsweredCorrect = answered !== null && answered !== '__timeout__' && answered === currentWord?.hanzi
+  const isAnsweredWrong = answered !== null && (answered === '__timeout__' || answered !== currentWord?.hanzi)
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Header stats */}
+      {/* Top stats bar */}
       <div className="flex items-center justify-between px-5 py-3 bg-white border-b border-gray-100">
         <div className="text-center">
-          <p className={`text-2xl font-black ${timerColor} tabular-nums`}>{timeLeft}</p>
-          <p className="chinese text-gray-400 text-xs">秒</p>
+          <p className={`text-2xl font-black tabular-nums ${timerColor}`}>{timeLeft}</p>
+          <p className="chinese text-gray-400 text-xs">总时间</p>
         </div>
         <div className="text-center">
           <p className="text-lg font-black text-gold">{streak > 0 ? `🔥×${streak}` : '—'}</p>
@@ -356,21 +363,17 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      {/* Progress track */}
+      {/* Running track */}
       <div className="px-5 py-3 bg-emerald-50 border-b border-emerald-100">
         <div className="relative w-full bg-emerald-200/50 rounded-full h-7 overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500"
+            style={{ width: `${distancePct}%` }} />
           <div
-            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500"
-            style={{ width: `${distancePct}%` }}
-          />
-          {/* Runner on track */}
-          <div
-            className={`absolute top-0.5 transition-all duration-500 ${paused ? 'animate-bounce' : ''}`}
-            style={{ left: `calc(${Math.min(distancePct, 88)}% - 12px)`, fontSize: '1.4rem', lineHeight: 1 }}
+            className={`absolute top-0.5 transition-all duration-500`}
+            style={{ left: `calc(${Math.min(distancePct, 88)}% - 14px)`, fontSize: '1.4rem', lineHeight: 1 }}
           >
             {runnerEmoji}
           </div>
-          {/* Finish flag */}
           <span className="absolute right-1 top-0.5 text-xl">🏁</span>
         </div>
         <div className="flex justify-between mt-1">
@@ -380,26 +383,55 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      {/* Word + choices */}
+      {/* Question + choices */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 gap-4">
-        {paused && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2">
-            <p className="chinese text-red-500 text-sm text-center">😵 答错了，小人暂停一下...</p>
+        {/* Feedback banners */}
+        {isAnsweredCorrect && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 w-full text-center">
+            <p className="chinese text-emerald-600 font-bold text-sm">✅ 答对了！+5 米</p>
+          </div>
+        )}
+        {isAnsweredWrong && (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2 w-full text-center">
+            <p className="chinese text-red-500 text-sm">
+              {answered === '__timeout__' ? '⏰ 超时了！' : '❌ 答错了！'}
+              &nbsp;正确答案：<strong>{currentWord?.hanzi}</strong>
+            </p>
           </div>
         )}
 
+        {/* Per-question countdown bar (only visible while unanswered) */}
+        {!answered && (
+          <div className="w-full flex items-center gap-2">
+            <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-1000 linear ${
+                  qTimeLeft <= 2 ? 'bg-red-400' : qTimeLeft <= 4 ? 'bg-amber-400' : 'bg-sky-blue'
+                }`}
+                style={{ width: `${qTimePct}%` }}
+              />
+            </div>
+            <span className={`text-xs tabular-nums font-bold w-4 text-right ${
+              qTimeLeft <= 2 ? 'text-red-500' : 'text-gray-400'
+            }`}>{qTimeLeft}</span>
+          </div>
+        )}
+
+        {/* Hebrew word */}
         <div className="w-full bg-gradient-to-br from-deep-blue to-sky-blue rounded-3xl p-6 text-center">
+          <p className="text-white/60 text-xs chinese mb-2">这个词是什么意思？</p>
           <p className="hebrew text-4xl font-black text-white mb-2 leading-tight">{currentWord?.hebrew}</p>
           <p className="text-sky-blue/80 text-base">{currentWord?.romanized}</p>
-          {currentWord?.hanziPhonetic?.trim().length > 1 && (
-            <p className="chinese text-gold/80 text-sm mt-1">{currentWord.hanziPhonetic}</p>
+          {(currentWord?.hanziPhonetic?.trim().length ?? 0) > 1 && (
+            <p className="chinese text-gold/80 text-sm mt-1">{currentWord?.hanziPhonetic}</p>
           )}
         </div>
 
+        {/* 4 choices */}
         <div className="grid grid-cols-2 gap-3 w-full">
           {choices.map((choice, i) => {
             const isCorrect = choice === currentWord?.hanzi
-            let cls = 'bg-white border-2 border-gray-100 text-gray-800'
+            let cls = 'bg-white border-2 border-gray-100 text-gray-800 hover:border-sky-blue/40'
             if (answered) {
               if (isCorrect) cls = 'bg-emerald-500 border-emerald-500 text-white'
               else if (choice === answered) cls = 'bg-red-400 border-red-400 text-white'
@@ -431,7 +463,7 @@ export default function GamesPage() {
 
   if (view === 'speed-match') return (
     <div className="min-h-full flex flex-col bg-sand">
-      <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 pt-12 pb-4 safe-top">
+      <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 page-header safe-top">
         <div className="flex items-center gap-3">
           <button onClick={() => setView('hub')} className="text-white/80 text-2xl">‹</button>
           <h1 className="chinese text-white font-black text-xl">⚡ 1v1 速度对决</h1>
@@ -443,7 +475,7 @@ export default function GamesPage() {
 
   if (view === 'marathon') return (
     <div className="min-h-full flex flex-col bg-sand">
-      <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 px-5 pt-12 pb-4 safe-top">
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 px-5 page-header safe-top">
         <div className="flex items-center gap-3">
           <button onClick={() => setView('hub')} className="text-white/80 text-2xl">‹</button>
           <h1 className="chinese text-white font-black text-xl">🏃 单词马拉松</h1>
@@ -453,20 +485,18 @@ export default function GamesPage() {
     </div>
   )
 
-  // Hub
   return (
     <div className="min-h-full flex flex-col bg-sand">
-      <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 pt-12 pb-6 safe-top">
+      <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 page-header safe-top">
         <h1 className="chinese text-white font-black text-2xl">🎮 游戏练习</h1>
         <p className="text-white/70 text-sm mt-1">Games · 边玩边学希伯来语！</p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
-        {/* Speed Match */}
         <button
           onClick={() => setView('speed-match')}
           id="game-speed-match-btn"
-          className="w-full rounded-3xl overflow-hidden shadow-lg active:scale-[0.98] transition-all"
+          className="w-full rounded-3xl overflow-hidden shadow-lg active:scale-[0.98] hover:shadow-xl transition-all"
         >
           <div className="bg-gradient-to-br from-deep-blue via-[#1a5ba0] to-sky-blue p-6 text-left">
             <div className="flex items-start justify-between mb-4">
@@ -487,19 +517,21 @@ export default function GamesPage() {
           </div>
         </button>
 
-        {/* Word Marathon */}
         <button
           onClick={() => setView('marathon')}
           id="game-marathon-btn"
-          className="w-full rounded-3xl overflow-hidden shadow-lg active:scale-[0.98] transition-all"
+          className="w-full rounded-3xl overflow-hidden shadow-lg active:scale-[0.98] hover:shadow-xl transition-all"
         >
           <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-6 text-left">
             <div className="flex items-start justify-between mb-4">
               <span className="text-5xl">🏃</span>
-              <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full chinese">60秒</span>
+              <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full chinese">{QUESTION_TIME}秒/题</span>
             </div>
             <h2 className="chinese text-white font-black text-2xl mb-1">单词马拉松</h2>
-            <p className="chinese text-white/70 text-sm mb-4">60秒快速答题！每答对一题，小人就向前跑。跑完100米你就赢了！</p>
+            <p className="chinese text-white/70 text-sm mb-4">
+              60秒快速答题！每题有 {QUESTION_TIME} 秒读题时间。
+              每答对一题，小人就向前跑。跑完100米你就赢了！
+            </p>
             <div className="flex gap-3 flex-wrap">
               {['🏃 跑步赛跑', '⏱️ 限时挑战', '🔥 连击奖励'].map(tag => (
                 <span key={tag} className="text-xs bg-white/15 text-white px-3 py-1 rounded-full chinese">{tag}</span>
@@ -512,8 +544,7 @@ export default function GamesPage() {
           </div>
         </button>
 
-        {/* More coming soon */}
-        <div className="glass-card p-5 text-center opacity-70">
+        <div className="glass-card p-5 text-center opacity-60">
           <p className="text-3xl mb-2">🚧</p>
           <p className="chinese font-bold text-gray-600">更多游戏即将上线</p>
           <p className="chinese text-gray-400 text-sm mt-1">单词拼写、听写训练...</p>

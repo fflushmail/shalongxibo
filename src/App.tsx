@@ -12,6 +12,7 @@ import SuggestWord from './pages/SuggestWord'
 import MorePage from './pages/MorePage'
 import GamesPage from './pages/GamesPage'
 import DialoguesPage from './pages/DialoguesPage'
+import SupportPage from './pages/SupportPage'
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/quiz"       element={<Quiz />} />
           <Route path="/games"      element={<GamesPage />} />
           <Route path="/dialogues"  element={<DialoguesPage />} />
+          <Route path="/support"    element={<SupportPage />} />
           <Route path="/topics"     element={<Topics />} />
           <Route path="/alphabet"   element={<AlphabetPage />} />
           <Route path="/community"  element={<CommunityPage />} />

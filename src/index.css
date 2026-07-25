@@ -138,13 +138,20 @@
     @apply text-emerald-500 font-bold text-lg;
   }
 
-  /* Safe area for mobile */
+  /* Safe area for mobile — always keep content away from status bar */
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 1rem);
   }
 
+  /* Minimum top clearance: whichever is larger — the device safe area or 3vw */
   .safe-top {
-    padding-top: env(safe-area-inset-top, 0px);
+    padding-top: max(env(safe-area-inset-top, 0px), 3vw);
+  }
+
+  /* Full page header: safe area + enough breathing room on any screen size */
+  .page-header {
+    padding-top: max(env(safe-area-inset-top, 0px), 3vw);
+    padding-bottom: 1.25rem;
   }
 }
 

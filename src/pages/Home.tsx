@@ -46,7 +46,7 @@ export default function Home() {
     <div className="min-h-full bg-[#F8FAFC] overflow-y-auto">
 
       {/* ── Top bar ── */}
-      <div className="px-5 pt-12 pb-4 safe-top flex items-center justify-between">
+      <div className="px-5 page-header flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src="/logo.png" alt="沙龙希伯" className="w-11 h-11 rounded-2xl shadow-md" />
           <div>

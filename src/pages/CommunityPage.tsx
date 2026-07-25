@@ -57,6 +57,7 @@ export default function CommunityPage() {
             <ul className="space-y-2 mb-5">
               {[
                 '和其他在以色列工作的中国朋友互动',
+                '群里有希伯来语母语者，可以直接提问！',
                 '提问工作和生活中的希伯来语问题',
                 '分享学习心得，互相帮助',
                 '想学新词？直接在群里问管理员！',

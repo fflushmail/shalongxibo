@@ -3,7 +3,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { useProgress } from '../contexts/ProgressContext'
 import { VOCABULARY } from '../data/vocabulary'
 
-const BUY_ME_COFFEE_URL = '' // Set your Buy Me a Coffee URL here
+// Update this URL when the bug-report WhatsApp group is ready
+const BUG_REPORT_WHATSAPP = 'https://chat.whatsapp.com/CzP0TemXmRuGybBstuhmZg' // replace with bug-report group URL
 
 export default function MorePage() {
   const navigate = useNavigate()
@@ -35,12 +36,20 @@ export default function MorePage() {
       color: 'from-[#25D366] to-[#128C7E]',
       onClick: () => navigate('/community'),
     },
+    {
+      id: 'bug-report',
+      icon: '🐛',
+      label: '反馈问题 / Bug',
+      sublabel: '发现 Bug？告诉我们！',
+      color: 'from-orange-400 to-red-500',
+      onClick: () => window.open(BUG_REPORT_WHATSAPP, '_blank', 'noopener,noreferrer'),
+    },
   ]
 
   return (
     <div className="min-h-full flex flex-col bg-sand">
       {/* Header */}
-      <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 pt-12 pb-6 safe-top">
+      <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 page-header safe-top">
         <div className="flex items-center justify-between">
           <h1 className="chinese text-white font-black text-2xl">☰ 更多</h1>
           {/* Login always in header */}
@@ -102,14 +111,14 @@ export default function MorePage() {
           </button>
         ))}
 
-        {/* Community tip — replaces the "Suggest a Word" menu item */}
+        {/* Community tip */}
         <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-start gap-3">
           <span className="text-2xl flex-shrink-0">💡</span>
           <div>
             <p className="chinese font-bold text-gray-800 text-sm mb-1">想建议新词汇？</p>
             <p className="chinese text-gray-600 text-sm leading-relaxed">
               在我们的 WhatsApp 学习群里提问就好！
-              群里有管理员，大家一起帮你找答案。
+              群里有管理员和希伯来语母语者，大家一起帮你！
             </p>
             <button
               onClick={() => navigate('/community')}
@@ -120,24 +129,21 @@ export default function MorePage() {
           </div>
         </div>
 
-        {/* Buy Me a Coffee */}
-        <div className="bg-[#FFDD00] rounded-2xl overflow-hidden">
-          <div className="p-4 flex items-center gap-4">
-            <div className="text-3xl flex-shrink-0">☕</div>
-            <div className="flex-1">
-              <p className="font-black text-gray-800 chinese">请我喝杯咖啡</p>
-              <p className="text-gray-600 text-sm">支持沙龙希伯继续免费！</p>
+        {/* Milktea / Ko-fi */}
+        <button
+          onClick={() => navigate('/support')}
+          id="milktea-btn"
+          className="w-full rounded-2xl overflow-hidden active:scale-[0.98] transition-all hover:shadow-md"
+        >
+          <div className="bg-gradient-to-r from-[#FF5E78] to-[#FF8E53] p-4 flex items-center gap-4">
+            <div className="text-3xl flex-shrink-0">🧋</div>
+            <div className="flex-1 text-left">
+              <p className="font-black text-white chinese">请我喝杯奶茶</p>
+              <p className="text-white/80 text-sm">支持沙龙希伯继续免费更新！</p>
             </div>
-            {BUY_ME_COFFEE_URL ? (
-              <a href={BUY_ME_COFFEE_URL} target="_blank" rel="noopener noreferrer"
-                className="bg-[#FF813F] text-white font-bold px-4 py-2 rounded-xl text-sm active:scale-95 transition-all flex-shrink-0">
-                支持 ❤️
-              </a>
-            ) : (
-              <span className="text-gray-400 text-xs chinese flex-shrink-0 text-right">即将<br/>开放</span>
-            )}
+            <span className="text-white/80 text-xl">›</span>
           </div>
-        </div>
+        </button>
 
         {/* Sign out */}
         {user && (
