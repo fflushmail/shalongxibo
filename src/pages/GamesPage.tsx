@@ -331,10 +331,12 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
           <p className="chinese text-gray-500 text-sm">答题数</p>
         </div>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-5 overflow-hidden relative">
+      {/* Track runs right → left: 🏁 on the left, 🏃 starts on the right */}
+      <div className="w-full bg-gray-100 rounded-full h-5 overflow-hidden relative" style={{ transform: 'scaleX(-1)' }}>
         <div className="h-full bg-gradient-to-r from-sky-blue to-deep-blue rounded-full transition-all duration-700"
           style={{ width: `${distancePct}%` }} />
-        <span className="absolute" style={{ left: `${Math.min(distancePct, 88)}%`, top: '-2px', fontSize: '1.4rem' }}>🏃</span>
+        {/* Counter-flip the emoji so runner faces left (toward flag) */}
+        <span className="absolute" style={{ left: `${Math.min(distancePct, 90)}%`, top: '-2px', fontSize: '1.4rem', transform: 'scaleX(-1)', display: 'inline-block' }}>🏃</span>
       </div>
       <button onClick={restart} className="btn-primary chinese w-full max-w-xs">🔄 再跑一次</button>
       <button onClick={onBack} className="text-gray-400 chinese text-sm">← 返回游戏菜单</button>
@@ -363,23 +365,26 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      {/* Running track */}
+      {/* Running track — right to left: 🏁 on left, runner starts on right */}
       <div className="px-5 py-3 bg-emerald-50 border-b border-emerald-100">
-        <div className="relative w-full bg-emerald-200/50 rounded-full h-7 overflow-hidden">
+        {/* Flip entire bar container; counter-flip children that need correct orientation */}
+        <div className="relative w-full bg-emerald-200/50 rounded-full h-7 overflow-hidden" style={{ transform: 'scaleX(-1)' }}>
           <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-500"
             style={{ width: `${distancePct}%` }} />
+          {/* Counter-flip emoji so runner faces left (toward the 🏁) */}
           <div
             className={`absolute top-0.5 transition-all duration-500`}
-            style={{ left: `calc(${Math.min(distancePct, 88)}% - 14px)`, fontSize: '1.4rem', lineHeight: 1 }}
+            style={{ left: `calc(${Math.min(distancePct, 88)}% - 14px)`, fontSize: '1.4rem', lineHeight: 1, transform: 'scaleX(-1)' }}
           >
             {runnerEmoji}
           </div>
-          <span className="absolute right-1 top-0.5 text-xl">🏁</span>
+          {/* Flag on the left (appears right after scaleX flip) */}
+          <span className="absolute right-1 top-0.5 text-xl" style={{ transform: 'scaleX(-1)', display: 'inline-block' }}>🏁</span>
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-xs text-emerald-600 chinese">出发</span>
-          <span className="text-xs text-emerald-600 chinese">{distance}/100m</span>
           <span className="text-xs text-emerald-600 chinese">终点</span>
+          <span className="text-xs text-emerald-600 chinese">{distance}/100m</span>
+          <span className="text-xs text-emerald-600 chinese">出发</span>
         </div>
       </div>
 
