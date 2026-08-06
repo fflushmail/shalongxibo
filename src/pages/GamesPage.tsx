@@ -89,6 +89,11 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
   // Ghost-specific: pre-built question sequence from replay
   const ghostQuestions = useRef<GhostQuestion[]>([])
 
+  // Opponent identity ref — always readable synchronously, even inside async batches
+  const oppRef = useRef<{ name: string; avatar: string; isGhost: boolean; isFallback: boolean }>({
+    name: '', avatar: '', isGhost: false, isFallback: false,
+  })
+
   // Standard bot-mode words (shuffled once)
   const botWords = useRef(shuffle(allWords).slice(0, 60)).current
 
@@ -154,6 +159,8 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
   const startWithBot = (level: BotLevel) => {
     setBotLevel(level)
     const cfg = BOT_CONFIG[level]
+    // Write to ref first (synchronous), then state
+    oppRef.current = { name: cfg.label, avatar: cfg.emoji, isGhost: false, isFallback: false }
     setOppName(cfg.label)
     setOppAvatar(cfg.emoji)
     setIsGhost(false)
@@ -168,28 +175,38 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
       const replay = await fetchRandomReplay(user?.uid ?? '')
       if (replay && replay.questions.length >= WIN_SCORE) {
         ghostQuestions.current = buildGhostQuestions(replay)
-        setOppName(replay.displayName)
-        setOppAvatar(replay.avatarEmoji || randomHumanAvatar())
-        setIsGhost(true)
-        setIsGhostFallback(false)
+        // Commit to ref synchronously before any state update
+        oppRef.current = {
+          name:       replay.displayName || '真实玩家',
+          avatar:     replay.avatarEmoji  || randomHumanAvatar(),
+          isGhost:    true,
+          isFallback: false,
+        }
       } else {
-        // Fallback: intermediate bot but shown as human
         ghostQuestions.current = []
-        const name = fakeBotName()
-        setOppName(name)
-        setOppAvatar(randomHumanAvatar())
-        setIsGhost(true)
-        setIsGhostFallback(true)
+        oppRef.current = {
+          name:       fakeBotName(),
+          avatar:     randomHumanAvatar(),
+          isGhost:    true,
+          isFallback: true,
+        }
         setBotLevel('intermediate')
       }
     } catch {
       ghostQuestions.current = []
-      setOppName(fakeBotName())
-      setOppAvatar(randomHumanAvatar())
-      setIsGhost(true)
-      setIsGhostFallback(true)
+      oppRef.current = {
+        name:       fakeBotName(),
+        avatar:     randomHumanAvatar(),
+        isGhost:    true,
+        isFallback: true,
+      }
       setBotLevel('intermediate')
     }
+    // Flush ref values into state + reset game in a single batch
+    setOppName(oppRef.current.name)
+    setOppAvatar(oppRef.current.avatar)
+    setIsGhost(oppRef.current.isGhost)
+    setIsGhostFallback(oppRef.current.isFallback)
     resetGame()
     setPhase('countdown')
   }
@@ -361,28 +378,35 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
     </div>
   )
 
-  if (phase === 'countdown') return (
-    <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-5">
-      <div className="text-5xl">⚡</div>
-      <p className="chinese text-gray-500 text-sm">
-        {isGhost && !isGhostFallback ? '👥 对战真实玩家录像' : isGhostFallback ? '👤 对战其他玩家' : '🎮 对战机器人'}
-        · 先到 {WIN_SCORE} 分获胜
-      </p>
-      <div className="bg-deep-blue/10 rounded-2xl px-5 py-3 flex items-center gap-2">
-        <span className="text-xl">{oppAvatar}</span>
-        <span className="chinese font-bold text-deep-blue text-lg">{oppName}</span>
-        {isGhost && !isGhostFallback && (
-          <span className="text-xs bg-purple-100 text-purple-600 chinese px-2 py-0.5 rounded-full">真实玩家</span>
-        )}
+  if (phase === 'countdown') {
+    // Read from ref so name is guaranteed correct even on first render
+    const name   = oppName   || oppRef.current.name
+    const avatar = oppAvatar || oppRef.current.avatar
+    const ghost  = isGhost   || oppRef.current.isGhost
+    const fallbk = isGhostFallback || oppRef.current.isFallback
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-5">
+        <div className="text-5xl">⚡</div>
+        <p className="chinese text-gray-500 text-sm">
+          {ghost && !fallbk ? '👥 对战真实玩家录像' : fallbk ? '👤 对战其他玩家' : '🎮 对战机器人'}
+          · 先到 {WIN_SCORE} 分获胜
+        </p>
+        <div className="bg-deep-blue/10 rounded-2xl px-5 py-3 flex items-center gap-2">
+          <span className="text-xl">{avatar}</span>
+          <span className="chinese font-bold text-deep-blue text-lg">{name}</span>
+          {ghost && !fallbk && (
+            <span className="text-xs bg-purple-100 text-purple-600 chinese px-2 py-0.5 rounded-full">真实玩家</span>
+          )}
+        </div>
+        <div className="w-28 h-28 rounded-full bg-gradient-to-br from-deep-blue to-sky-blue
+                        flex items-center justify-center shadow-2xl shadow-deep-blue/30">
+          <span className="text-white font-black text-6xl leading-none">
+            {countdown === 0 ? '开始!' : countdown}
+          </span>
+        </div>
       </div>
-      <div className="w-28 h-28 rounded-full bg-gradient-to-br from-deep-blue to-sky-blue
-                      flex items-center justify-center shadow-2xl shadow-deep-blue/30">
-        <span className="text-white font-black text-6xl leading-none">
-          {countdown === 0 ? '开始!' : countdown}
-        </span>
-      </div>
-    </div>
-  )
+    )
+  }
 
   if (phase === 'result') return (
     <div className="flex-1 flex flex-col items-center justify-center text-center px-6 gap-5">
