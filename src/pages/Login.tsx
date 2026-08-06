@@ -92,12 +92,6 @@ export default function Login() {
       {/* Card */}
       <div className="flex-1 bg-sand rounded-t-[2rem] px-6 pt-8 pb-10">
 
-        {/* Setup reminder */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-6">
-          <p className="chinese text-amber-700 text-xs leading-relaxed">
-            💡 首次使用？请确保已在 Firebase 控制台中启用 <strong>邮箱/密码</strong> 和 <strong>Google</strong> 登录方式。
-          </p>
-        </div>
 
         {/* Tab toggle */}
         <div className="bg-gray-100 rounded-2xl p-1 flex mb-6">

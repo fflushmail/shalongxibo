@@ -14,26 +14,37 @@ import { db } from '../firebase'
 // ── Types ──────────────────────────────────────────────────────────────────
 export interface QuestionRecord {
   questionIndex: number
-  hebrewWord: string     // The Hebrew word that was shown
-  correctAnswer: string  // The correct hanzi
-  selectedAnswer: string // What the user picked (or '__bot__' for AI)
-  timeToAnswerMs: number // ms elapsed from question appearing to answer
+  hebrewWord: string      // The Hebrew word that was shown
+  romanized: string       // Romanization shown alongside
+  hanziPhonetic: string   // Phonetic hint shown
+  correctAnswer: string   // The correct hanzi
+  selectedAnswer: string  // What the user picked
+  options: string[]       // Full list of 4 choices shown to the player
+  timeToAnswerMs: number  // ms elapsed from question appearing to answer
   wasCorrect: boolean
 }
 
 export interface GameReplay {
   id: string
   userId: string
-  displayName: string   // shown as opponent name in ghost match
+  displayName: string
+  avatarEmoji: string     // human-style emoji (never 🤖)
   score: number
   totalQuestions: number
-  accuracy: number      // 0–1
+  accuracy: number
   avgResponseMs: number
   questions: QuestionRecord[]
   createdAt: Timestamp | null
 }
 
 const REPLAYS_COL = 'game_replays'
+
+// Human-style avatar emojis — never show a robot for real players
+const HUMAN_AVATARS = ['🧑', '👨', '👩', '🧑‍💻', '👨‍🎓', '👩‍🎓', '🧑‍🏫', '👤']
+
+export function randomHumanAvatar(): string {
+  return HUMAN_AVATARS[Math.floor(Math.random() * HUMAN_AVATARS.length)]
+}
 
 // ── Save a replay after a match ───────────────────────────────────────────
 export async function saveReplay(
@@ -50,6 +61,7 @@ export async function saveReplay(
     await addDoc(collection(db, REPLAYS_COL), {
       userId,
       displayName,
+      avatarEmoji: randomHumanAvatar(),
       score,
       totalQuestions: questions.length,
       accuracy,
@@ -58,7 +70,6 @@ export async function saveReplay(
       createdAt: serverTimestamp(),
     })
   } catch (err) {
-    // Non-fatal — replay saving should never break gameplay
     console.warn('Failed to save replay:', err)
   }
 }
@@ -66,18 +77,16 @@ export async function saveReplay(
 // ── Fetch a random replay from another user ───────────────────────────────
 export async function fetchRandomReplay(currentUserId: string): Promise<GameReplay | null> {
   try {
-    // Fetch up to 20 recent replays from other users
     const q = query(
       collection(db, REPLAYS_COL),
       where('userId', '!=', currentUserId),
-      orderBy('userId'),          // required for inequality filter
+      orderBy('userId'),
       orderBy('createdAt', 'desc'),
       limit(20),
     )
     const snap = await getDocs(q)
     if (snap.empty) return null
 
-    // Pick a random one from the results
     const docs = snap.docs
     const chosen = docs[Math.floor(Math.random() * docs.length)]
     const data = chosen.data()
@@ -86,11 +95,12 @@ export async function fetchRandomReplay(currentUserId: string): Promise<GameRepl
       id: chosen.id,
       userId: data.userId,
       displayName: data.displayName || '真实玩家',
+      avatarEmoji: data.avatarEmoji || randomHumanAvatar(),
       score: data.score ?? 0,
       totalQuestions: data.totalQuestions ?? 0,
       accuracy: data.accuracy ?? 0.75,
       avgResponseMs: data.avgResponseMs ?? 2500,
-      questions: data.questions ?? [],
+      questions: (data.questions ?? []) as QuestionRecord[],
       createdAt: data.createdAt ?? null,
     } satisfies GameReplay
   } catch (err) {
@@ -99,7 +109,7 @@ export async function fetchRandomReplay(currentUserId: string): Promise<GameRepl
   }
 }
 
-// ── Generate a realistic fake bot username (fallback) ────────────────────
+// ── Generate a realistic fake human username (fallback) ───────────────────
 const FAKE_NAMES = [
   '王小明', '李华', '张伟', '陈亮', '刘波',
   '杨帆', '赵磊', '孙明', '周强', '吴涛',
