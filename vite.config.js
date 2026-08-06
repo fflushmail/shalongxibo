@@ -59,4 +59,14 @@ export default defineConfig({
             },
         }),
     ],
+    // During `npm run dev`: proxy /api to `vercel dev --listen 3001`
+    // Run: `vercel dev --listen 3001` in a separate terminal
+    server: {
+        proxy: {
+            '/api': {
+                target: 'http://localhost:3001',
+                changeOrigin: true,
+            },
+        },
+    },
 });

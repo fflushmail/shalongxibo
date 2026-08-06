@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import AuthGate from './components/AuthGate'
+import AIChatModal from './components/AIChatModal'
 import Home from './pages/Home'
 import Flashcards from './pages/Flashcards'
 import Quiz from './pages/Quiz'
@@ -17,6 +19,8 @@ import SupportPage from './pages/SupportPage'
 
 /** All routes except /login are behind the auth gate */
 function ProtectedApp() {
+  const [chatOpen, setChatOpen] = useState(false)
+
   return (
     <AuthGate>
       <div className="min-h-screen bg-sand flex flex-col max-w-lg mx-auto relative">
@@ -38,7 +42,28 @@ function ProtectedApp() {
             <Route path="*"           element={<Navigate to="/" replace />} />
           </Routes>
         </main>
+
         <Navbar />
+
+        {/* Floating AI Tutor button — above navbar */}
+        <button
+          id="ai-tutor-fab"
+          onClick={() => setChatOpen(true)}
+          aria-label="问 AI 导师"
+          className="fixed bottom-24 right-4 z-40
+                     bg-gradient-to-br from-deep-blue to-sky-blue text-white
+                     rounded-2xl px-4 py-3 shadow-xl shadow-deep-blue/30
+                     flex items-center gap-2
+                     hover:brightness-110 hover:shadow-2xl hover:-translate-y-0.5
+                     active:scale-95 transition-all duration-200"
+          style={{ maxWidth: 'calc(min(100vw, 512px) - 2rem)' }}
+        >
+          <span className="text-xl leading-none">💬</span>
+          <span className="chinese font-bold text-sm whitespace-nowrap">问 AI 导师</span>
+        </button>
+
+        {/* Chat modal (portal-like, rendered in DOM but z-indexed above everything) */}
+        {chatOpen && <AIChatModal onClose={() => setChatOpen(false)} />}
       </div>
     </AuthGate>
   )
