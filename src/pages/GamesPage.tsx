@@ -234,7 +234,12 @@ function SpeedMatch({ onBack }: { onBack: () => void }) {
       if (correct) {
         setOppScore(s => {
           const next = s + 1
-          if (next >= WIN_SCORE) { setWinner('opponent'); setPhase('result') }
+          if (next >= WIN_SCORE) {
+            // Save human telemetry even when opponent wins
+            if (user) saveReplay(user.uid, user.displayName || user.email || '玩家', replayLog.current)
+            setWinner('opponent')
+            setPhase('result')
+          }
           return next
         })
       }
@@ -481,6 +486,7 @@ const QUESTION_TIME = 8
 const FEEDBACK_DELAY = 1800
 
 function WordMarathon({ onBack }: { onBack: () => void }) {
+  const { user } = useAuth()
   const words = useRef(shuffle(VOCABULARY).slice(0, 80)).current
   const allHanzi = useMemo(() => VOCABULARY.map(w => w.hanzi), [])
 
@@ -492,9 +498,13 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
   const [distance, setDistance]         = useState(0)
   const [streak, setStreak]             = useState(0)
   const [answered, setAnswered]         = useState<string | null>(null)
-  const [pickedWrong, setPickedWrong]   = useState<string | null>(null) // Task 3: track wrong pick
+  const [pickedWrong, setPickedWrong]   = useState<string | null>(null)
   const [transitioning, setTransitioning] = useState(false)
   const MAX_DIST = 100
+
+  // Replay telemetry
+  const replayLog    = useRef<QuestionRecord[]>([])
+  const qStartMs     = useRef<number>(0)
 
   const currentWord = words[qIndex % words.length]
   const choices = useMemo(() => {
@@ -507,6 +517,17 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
     setQTimeLeft(QUESTION_TIME); setQIndex(i => i + 1)
   }, [])
 
+  // Start timing each question
+  useEffect(() => {
+    if (phase === 'playing') qStartMs.current = Date.now()
+  }, [qIndex, phase])
+
+  // Save replay when game ends
+  useEffect(() => {
+    if (phase !== 'result' || !user || replayLog.current.length === 0) return
+    saveReplay(user.uid, user.displayName || user.email || '玩家', replayLog.current)
+  }, [phase])
+
   useEffect(() => {
     if (phase !== 'playing' || transitioning) return
     if (timeLeft <= 0) { setPhase('result'); return }
@@ -517,6 +538,18 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     if (phase !== 'playing' || transitioning) return
     if (qTimeLeft <= 0) {
+      // Record timeout as a missed answer in telemetry
+      replayLog.current.push({
+        questionIndex: qIndex,
+        hebrewWord: currentWord?.hebrew ?? '',
+        romanized: currentWord?.romanized ?? '',
+        hanziPhonetic: currentWord?.hanziPhonetic ?? '',
+        correctAnswer: currentWord?.hanzi ?? '',
+        selectedAnswer: '__timeout__',
+        options: choices,
+        timeToAnswerMs: QUESTION_TIME * 1000,
+        wasCorrect: false,
+      })
       setAnswered('__timeout__'); setTransitioning(true); setStreak(0)
       setTimeout(goNextQuestion, FEEDBACK_DELAY)
       return
@@ -528,8 +561,23 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
   const handleChoice = (choice: string) => {
     if (answered || phase !== 'playing' || transitioning) return
     const correct = choice === currentWord.hanzi
+    const elapsed = Date.now() - qStartMs.current
     setAnswered(choice); setTransitioning(true)
-    if (!correct) setPickedWrong(choice)  // Task 3
+    if (!correct) setPickedWrong(choice)
+
+    // Log human telemetry for replay dataset
+    replayLog.current.push({
+      questionIndex: qIndex,
+      hebrewWord: currentWord.hebrew,
+      romanized: currentWord.romanized ?? '',
+      hanziPhonetic: currentWord.hanziPhonetic ?? '',
+      correctAnswer: currentWord.hanzi,
+      selectedAnswer: choice,
+      options: choices,
+      timeToAnswerMs: elapsed,
+      wasCorrect: correct,
+    })
+
     if (correct) {
       const newDist = Math.min(distance + 5, MAX_DIST)
       setDistance(newDist); setStreak(s => s + 1)
@@ -543,6 +591,7 @@ function WordMarathon({ onBack }: { onBack: () => void }) {
   const restart = () => {
     setPhase('ready'); setQIndex(0); setTimeLeft(60); setQTimeLeft(QUESTION_TIME)
     setDistance(0); setStreak(0); setAnswered(null); setPickedWrong(null); setTransitioning(false)
+    replayLog.current = []  // clear telemetry for fresh run
   }
 
   const distancePct  = (distance / MAX_DIST) * 100
