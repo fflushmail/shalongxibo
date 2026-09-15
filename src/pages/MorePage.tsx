@@ -1,7 +1,13 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useProgress } from '../contexts/ProgressContext'
 import { VOCABULARY } from '../data/vocabulary'
+import {
+  isDailyNotificationEnabled,
+  setDailyNotificationEnabled,
+  sendTestNotification,
+} from '../services/notificationService'
 
 // Update this URL when the bug-report WhatsApp group is ready
 const BUG_REPORT_WHATSAPP = 'https://chat.whatsapp.com/CzP0TemXmRuGybBstuhmZg' // replace with bug-report group URL
@@ -10,6 +16,35 @@ export default function MorePage() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const { totalLearned } = useProgress()
+  const [notifEnabled, setNotifEnabled] = useState(isDailyNotificationEnabled())
+  const [testingNotif, setTestingNotif] = useState(false)
+  const [testResult, setTestResult] = useState<string | null>(null)
+
+  useEffect(() => {
+    setNotifEnabled(isDailyNotificationEnabled())
+  }, [])
+
+  const handleToggle = async (val: boolean) => {
+    setNotifEnabled(val)
+    const success = await setDailyNotificationEnabled(val)
+    if (!success && val) {
+      setNotifEnabled(false)
+      alert('请在手机系统设置中允许"沙龙希伯"发送通知')
+    }
+  }
+
+  const handleTestNotification = async () => {
+    setTestingNotif(true)
+    setTestResult(null)
+    const ok = await sendTestNotification()
+    setTestingNotif(false)
+    if (ok) {
+      setTestResult('测试通知已发送！请查看通知栏')
+    } else {
+      setTestResult('未能发送，请检查系统通知权限')
+    }
+    setTimeout(() => setTestResult(null), 4000)
+  }
 
   const MENU_ITEMS = [
     {
@@ -110,6 +145,49 @@ export default function MorePage() {
             <span className="ml-auto text-gray-300 text-xl">›</span>
           </button>
         ))}
+
+        {/* Daily Notification Settings */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-blue flex items-center justify-center text-xl">
+                🔔
+              </div>
+              <div>
+                <p className="chinese font-bold text-gray-800 text-sm">每日新单词推送</p>
+                <p className="chinese text-gray-400 text-xs">每天上午 09:00 推送一个实用希伯来单词</p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={notifEnabled}
+                onChange={e => handleToggle(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-deep-blue"></div>
+            </label>
+          </div>
+
+          {notifEnabled && (
+            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+              <span className="chinese text-xs text-gray-400">已开启每日推送</span>
+              <button
+                onClick={handleTestNotification}
+                disabled={testingNotif}
+                className="text-xs text-sky-blue hover:text-deep-blue font-medium chinese bg-sky-50 px-3 py-1.5 rounded-lg active:scale-95 transition-all"
+              >
+                {testingNotif ? '发送中...' : '测试发送一条'}
+              </button>
+            </div>
+          )}
+
+          {testResult && (
+            <p className="chinese text-xs text-emerald-600 mt-2 bg-emerald-50 p-2 rounded-lg text-center">
+              {testResult}
+            </p>
+          )}
+        </div>
 
         {/* Community tip */}
         <div className="bg-green-50 border border-green-100 rounded-2xl p-4 flex items-start gap-3">

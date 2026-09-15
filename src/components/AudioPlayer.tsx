@@ -1,4 +1,5 @@
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
+import { registerActiveAudio, stopAllAudio } from '../utils/audioManager'
 
 interface AudioPlayerProps {
   url: string
@@ -8,14 +9,11 @@ interface AudioPlayerProps {
 // Convert github.com raw URLs to raw.githubusercontent.com (CORS-friendly)
 function normalizeAudioUrl(url: string): string {
   if (!url) return url
-  // Pattern: https://github.com/{user}/{repo}/raw/refs/heads/{branch}/{file}
-  // → https://raw.githubusercontent.com/{user}/{repo}/refs/heads/{branch}/{file}
   return url
     .replace(
       /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/raw\/refs\/heads\/([^/]+)\//,
       'https://raw.githubusercontent.com/$1/$2/refs/heads/$3/'
     )
-    // Also handle: https://github.com/{user}/{repo}/raw/{branch}/{file}
     .replace(
       /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/raw\/(?!refs)([^/]+)\//,
       'https://raw.githubusercontent.com/$1/$2/$3/'
@@ -34,24 +32,67 @@ export default function AudioPlayer({ url, size = 'md' }: AudioPlayerProps) {
     lg: 'w-14 h-14 text-xl',
   }
 
+  // Cleanup on unmount: immediately pause and reset
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        try {
+          audioRef.current.pause()
+          audioRef.current.currentTime = 0
+        } catch {
+          // ignore
+        }
+        audioRef.current = null
+      }
+    }
+  }, [])
+
+  // Cleanup when url changes
+  useEffect(() => {
+    if (audioRef.current) {
+      try {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+      } catch {
+        // ignore
+      }
+      audioRef.current = null
+    }
+    setPlaying(false)
+    setError(false)
+  }, [fixedUrl])
+
   const play = useCallback(async () => {
     if (!fixedUrl) return
     setError(false)
 
-    // Stop any currently playing audio
+    // Stop any currently playing audio on this instance
     if (audioRef.current && playing) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
+      try {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+      } catch {
+        // ignore
+      }
       setPlaying(false)
       return
     }
 
-    // Create a fresh Audio instance each time (avoids src reassignment bugs)
+    // Stop all other audio playing in the app
+    stopAllAudio()
+
+    // Create fresh Audio instance
     const audio = new Audio(fixedUrl)
     audioRef.current = audio
+    registerActiveAudio(audio)
 
-    audio.onended = () => setPlaying(false)
-    audio.onerror = () => { setPlaying(false); setError(true) }
+    audio.onended = () => {
+      setPlaying(false)
+    }
+    audio.onerror = () => {
+      setPlaying(false)
+      setError(true)
+    }
 
     try {
       await audio.play()
@@ -79,12 +120,17 @@ export default function AudioPlayer({ url, size = 'md' }: AudioPlayerProps) {
       aria-label="播放音频"
       title={error ? '音频加载失败' : '播放 / Play'}
     >
-      {playing && (
-        <span className={`audio-ring bg-sky-blue/30 ${sizeClasses[size]} rounded-full absolute`} />
+      {playing ? (
+        <span className="flex items-center justify-center gap-0.5">
+          <span className="w-1 h-3 bg-white rounded-full animate-pulse" />
+          <span className="w-1 h-4 bg-white rounded-full animate-pulse delay-75" />
+          <span className="w-1 h-2 bg-white rounded-full animate-pulse delay-150" />
+        </span>
+      ) : error ? (
+        <span className="text-xs">⚠️</span>
+      ) : (
+        <span>🔊</span>
       )}
-      <span className="relative z-10">
-        {error ? '⚠️' : playing ? '⏸' : '🔊'}
-      </span>
     </button>
   )
 }

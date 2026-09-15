@@ -24,14 +24,21 @@ allprojects {
     }
 }
 
-// ── Java 17 compatibility override ───────────────────────────────────────────
-// Capacitor 7 targets Java 21; force Java 17 on every subproject so the build
-// works with JDK 17. AGP forbids --release, so only use sourceCompatibility.
+// ── Java & Kotlin 17 compatibility override ────────────────────────────────────
+// Capacitor 7 targets Java 21; force Java & Kotlin 17 on every subproject so the build
+// works with JDK 17.
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             project.android.compileOptions.sourceCompatibility = JavaVersion.VERSION_17
             project.android.compileOptions.targetCompatibility = JavaVersion.VERSION_17
+        }
+        project.tasks.matching { it.name.contains("Kotlin") }.configureEach {
+            try {
+                it.kotlinOptions {
+                    jvmTarget = "17"
+                }
+            } catch (Exception ignored) {}
         }
     }
 }
