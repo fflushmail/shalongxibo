@@ -1,3 +1,41 @@
+/* ── Locally bundled fonts (offline + China firewall safe) ─────────────────── */
+
+/* Frank Ruhl Libre — Hebrew body text */
+@font-face {
+  font-family: 'Frank Ruhl Libre';
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url('/fonts/frank-ruhl-400.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Frank Ruhl Libre';
+  font-style: normal; font-weight: 700; font-display: swap;
+  src: url('/fonts/frank-ruhl-700.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Frank Ruhl Libre';
+  font-style: normal; font-weight: 900; font-display: swap;
+  src: url('/fonts/frank-ruhl-900.ttf') format('truetype');
+}
+
+/* Inter — UI sans-serif */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('/fonts/inter-400.woff2') format('woff2');
+}
+
+/* Noto Sans SC — Chinese characters */
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal; font-weight: 400; font-display: swap;
+  src: url('/fonts/noto-sans-sc-400.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal; font-weight: 700; font-display: swap;
+  src: url('/fonts/noto-sans-sc-700.ttf') format('truetype');
+}
+
 /* Hebrew handwriting font: Dana Yad */
 @font-face {
   font-family: 'DanaYad';

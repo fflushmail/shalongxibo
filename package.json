@@ -11,6 +11,9 @@
     "enrich": "node scripts/enrich-images.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "firebase": "^10.12.0",
     "papaparse": "^5.4.1",
     "react": "^18.3.1",
