@@ -55,21 +55,15 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Login always in header */}
+        {/* Profile link in header */}
         <button
-          onClick={() => navigate(user ? '/profile' : '/login')}
+          onClick={() => navigate('/profile')}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E2E8F0]
                      text-[#0F172A] text-sm chinese font-medium shadow-sm
                      hover:bg-[#EFF6FF] hover:border-[#2563EB]/30 active:scale-95 transition-all"
         >
-          {user?.photoURL ? (
-            <img src={user.photoURL} alt="" referrerPolicy="no-referrer"
-              className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-              onError={(e) => { e.currentTarget.style.display = 'none' }}
-            />
-          ) : null}
-          <span>{user ? (user.displayName?.split(' ')[0] || '我的') : '登录'}</span>
-          {!user && <span className="text-[#2563EB]">🔑</span>}
+          <span>👤</span>
+          <span>{user?.displayName || '我的学习'}</span>
         </button>
       </div>
 

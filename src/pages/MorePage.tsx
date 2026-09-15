@@ -87,27 +87,18 @@ export default function MorePage() {
       <div className="bg-gradient-to-r from-deep-blue to-sky-blue px-5 page-header safe-top">
         <div className="flex items-center justify-between">
           <h1 className="chinese text-white font-black text-2xl">☰ 更多</h1>
-          {/* Login always in header */}
+          {/* Profile link in header */}
           <button
-            onClick={() => navigate(user ? '/profile' : '/login')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 text-white text-sm chinese active:scale-95 transition-all hover:bg-white/30"
+            onClick={() => navigate('/profile')}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 text-white text-sm chinese active:scale-95 transition-all hover:bg-white/30"
           >
-            {user?.photoURL ? (
-              <img
-                src={user.photoURL} alt="" referrerPolicy="no-referrer"
-                className="w-6 h-6 rounded-full object-cover"
-                onError={(e) => { e.currentTarget.style.display = 'none' }}
-              />
-            ) : null}
-            <span>{user ? (user.displayName?.split(' ')[0] || '我的') : '登录 / 注册'}</span>
-            {!user && <span>🔑</span>}
+            <span>👤</span>
+            <span>{user?.displayName || '我的档案'}</span>
           </button>
         </div>
-        {user && (
-          <p className="chinese text-white/70 text-sm mt-1">
-            你好，{user.displayName || user.email?.split('@')[0] || '朋友'} 👋
-          </p>
-        )}
+        <p className="chinese text-white/70 text-sm mt-1">
+          你好，{user?.displayName || '朋友'} 👋
+        </p>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-5 space-y-3">
@@ -222,16 +213,6 @@ export default function MorePage() {
             <span className="text-white/80 text-xl">›</span>
           </div>
         </button>
-
-        {/* Sign out */}
-        {user && (
-          <button
-            onClick={async () => { await signOut(); navigate('/') }}
-            className="w-full py-3 rounded-2xl text-red-500 bg-red-50 border border-red-100 chinese font-medium active:scale-95 transition-all hover:bg-red-100"
-          >
-            退出登录
-          </button>
-        )}
 
         <p className="text-center text-gray-300 text-xs chinese pb-2">
           沙龙希伯 v1.0 · 为在以色列的中国朋友而制作 🇮🇱🇨🇳

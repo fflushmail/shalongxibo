@@ -47,64 +47,74 @@ interface VowelInfo {
   name: string
   nameHebrew: string
   nameZh: string
-  displayChar: string   // The canonical display glyph
+  displayChar: string   // The canonical display glyph on a base letter or Vav
   baseLetterNote: string
   sound: string
   soundZh: string
   exampleWord: string
   exampleWordMeaning: string
   exampleRomanized: string
-  audioUrl?: string
+  isShva?: boolean
+  shvaNachWord?: string
+  shvaNachMeaning?: string
+  shvaNachNote?: string
+  shvaNaWord?: string
+  shvaNaMeaning?: string
+  shvaNaNote?: string
 }
 
 const VOWELS: VowelInfo[] = [
   {
     name: 'Shuruk',
     nameHebrew: 'שׁוּרוּק',
-    nameZh: '舒鲁克 (U)',
+    nameZh: '舒鲁克 (וּ)',
     displayChar: 'וּ',
-    baseLetterNote: '固定以字母 Vav (ו) 为载体，中间一点',
+    baseLetterNote: '置于辅音字母 Vav (ו) 上，圆点位于字母正中间',
     sound: 'U（长元音，像 "moon" 中的 "oo"）',
-    soundZh: '圆唇长乌音 "呜"。注意：永远标在 Vav (ו) 中间，绝不在 Alef 上！',
+    soundZh: '圆唇长乌音 "呜"。由字母 Vav (ו) 配合中间的圆点构成。',
     exampleWord: 'הוּא',
     exampleWordMeaning: '他 (Hu)',
     exampleRomanized: 'Hu',
-    audioUrl: 'https://raw.githubusercontent.com/fflushmail/xibo/refs/heads/main/audio/hu.mp3',
   },
   {
     name: 'Cholam Male',
     nameHebrew: 'חוֹלָם מָלֵא',
-    nameZh: '全霍拉姆 (O)',
+    nameZh: '全霍拉姆 (וֹ)',
     displayChar: 'וֹ',
-    baseLetterNote: '固定以字母 Vav (ו) 为载体，顶上一侧一点',
+    baseLetterNote: '置于辅音字母 Vav (ו) 上，圆点位于字母顶端正上方',
     sound: 'O（长元音，像 "go" 中的 "o"）',
-    soundZh: '圆唇长长欧音 "喔"。注意：固定写在 Vav (ו) 的顶部上方，绝不在 Alef 上！',
+    soundZh: '圆唇长欧音 "喔"。由字母 Vav (ו) 配合顶端的圆点构成。',
     exampleWord: 'שָׁלוֹם',
     exampleWordMeaning: '你好 / 平安 (Shalom)',
     exampleRomanized: 'Shalom',
-    audioUrl: 'https://raw.githubusercontent.com/fflushmail/xibo/refs/heads/main/audio/shalom.mp3',
   },
   {
     name: 'Shva',
     nameHebrew: 'שְׁוָא',
-    nameZh: '什瓦 / 短促停顿 (ְ)',
+    nameZh: '什瓦 (בְּ / ◌ְ)',
     displayChar: 'בְּ',
-    baseLetterNote: '字母下方两个垂直对齐的点 (ְ)',
-    sound: '极短促的 e 或微小辅音停顿',
-    soundZh: '半元音或无声：分为发声什瓦（极短弱 e，如 be-）与静音什瓦（纯辅音停顿）。',
+    baseLetterNote: '标在辅音字母下方，由上下两颗垂直对齐的圆点组成 (בְּ / ◌ְ)',
+    sound: '静音停顿 (Shva Nach) 或 弱元音 e (Shva Na)',
+    soundZh: '希伯来语中最特殊的符号，分为两种发音情况：\n• 静音停顿 (Shva Nach)：完全不发元音，仅用于闭合音节或停顿（如 מִכְתָּב Mikhtav 中的 כְ）；\n• 弱元音 e (Shva Na)：出现在部分词首或特定语法位置，发极轻微、短促的 "e" 弱音（如 בְּבַקָּשָׁה Bevakasha 中的 בְ）。',
     exampleWord: 'בְּבַקָּשָׁה',
     exampleWordMeaning: '请 / 不客气 (Bevakasha)',
     exampleRomanized: 'Bevakasha',
-    audioUrl: 'https://raw.githubusercontent.com/fflushmail/xibo/refs/heads/main/audio/bevakasha.mp3',
+    isShva: true,
+    shvaNachWord: 'מִכְתָּב',
+    shvaNachMeaning: '信件 (Mikhtav)',
+    shvaNachNote: 'כְ 为静音停顿 (Shva Nach)，不发元音，闭合音节',
+    shvaNaWord: 'בְּבַקָּשָׁה',
+    shvaNaMeaning: '请 / 不客气 (Bevakasha)',
+    shvaNaNote: 'בְ 为弱元音 (Shva Na)，发极短促的轻弱 e',
   },
   {
     name: 'Kubutz',
     nameHebrew: 'קֻבּוּץ',
-    nameZh: '库布茨 (U 短元音)',
-    displayChar: 'אֻ',
-    baseLetterNote: '字母下方三颗沿对角线倾斜排列的点 (ֻ)',
+    nameZh: '库布茨 (בֻּ / ◌ֻ)',
+    displayChar: 'בֻּ',
+    baseLetterNote: '标在辅音字母下方，由三颗沿对角线倾斜排列的点组成 (בֻּ / ◌ֻ)',
     sound: 'U（短促，像 "put" 中的 "u"）',
-    soundZh: '短元音 "乌"，当没有 Vav 辅助时用于辅音字母下方。',
+    soundZh: '短元音 "乌"，用于辅音字母下方表示短促的 U 音。',
     exampleWord: 'כֻּלָּם',
     exampleWordMeaning: '所有人 / 大家 (Kulam)',
     exampleRomanized: 'Kulam',
@@ -112,22 +122,21 @@ const VOWELS: VowelInfo[] = [
   {
     name: 'Kamatz',
     nameHebrew: 'קָמָץ',
-    nameZh: '卡玛茨 (A)',
-    displayChar: 'אָ',
-    baseLetterNote: '字母下方微型 "T" 字形符号 (ָ)',
+    nameZh: '卡玛茨 (בָּ / ◌ָ)',
+    displayChar: 'בָּ',
+    baseLetterNote: '标在辅音字母下方，形似微型 "T" 字 (בָּ / ◌ָ)',
     sound: 'A（长元音，像 "father" 中的 ah）',
     soundZh: '开门音 "阿"，嘴型自然张大。',
     exampleWord: 'אַבָּא',
     exampleWordMeaning: '爸爸 (Aba)',
     exampleRomanized: 'Aba',
-    audioUrl: 'https://raw.githubusercontent.com/fflushmail/xibo/refs/heads/main/audio/aba.mp3',
   },
   {
     name: 'Patach',
     nameHebrew: 'פַּתַח',
-    nameZh: '帕塔赫 (A 短元音)',
-    displayChar: 'אַ',
-    baseLetterNote: '字母下方一条短横线 (ַ)',
+    nameZh: '帕塔赫 (בַּ / ◌ַ)',
+    displayChar: 'בַּ',
+    baseLetterNote: '标在辅音字母下方，为一条短横线 (בַּ / ◌ַ)',
     sound: 'A（短元音，短促有力）',
     soundZh: '短促清脆的 "阿"，像 "cup" 或 "car" 前半。',
     exampleWord: 'יָד',
@@ -137,41 +146,38 @@ const VOWELS: VowelInfo[] = [
   {
     name: 'Tsere',
     nameHebrew: 'צֵירֵי',
-    nameZh: '策雷 (EI / E)',
-    displayChar: 'אֵ',
-    baseLetterNote: '字母下方两颗水平并排的点 (ֵ)',
+    nameZh: '策雷 (בֵּ / ◌ֵ)',
+    displayChar: 'בֵּ',
+    baseLetterNote: '标在辅音字母下方，由两颗水平并排的点组成 (בֵּ / ◌ֵ)',
     sound: 'EI / E（像 "hey" 中的 ei）',
     soundZh: '类似双元音 "欸"，嘴角向两边微拉。',
     exampleWord: 'כֵּן',
     exampleWordMeaning: '是 / 对 (Ken)',
     exampleRomanized: 'Ken',
-    audioUrl: 'https://raw.githubusercontent.com/fflushmail/xibo/refs/heads/main/audio/ken.mp3',
   },
   {
     name: 'Segol',
     nameHebrew: 'סֶגוֹל',
-    nameZh: '塞戈尔 (E 短元音)',
-    displayChar: 'אֶ',
-    baseLetterNote: '字母下方三颗点组成倒三角形 (ֶ)',
+    nameZh: '塞戈尔 (בֶּ / ◌ֶ)',
+    displayChar: 'בֶּ',
+    baseLetterNote: '标在辅音字母下方，由三颗点构成倒三角形 (בֶּ / ◌ֶ)',
     sound: 'E（短元音，像 "bed" 中的 e）',
     soundZh: '短促的 "诶"，常见于词中音节。',
     exampleWord: 'כֶּלֶב',
     exampleWordMeaning: '狗 (Kelev)',
     exampleRomanized: 'Kelev',
-    audioUrl: 'https://raw.githubusercontent.com/fflushmail/xibo/refs/heads/main/audio/kelev.mp3',
   },
   {
     name: 'Chirik',
     nameHebrew: 'חִירִיק',
-    nameZh: '希里克 (I)',
-    displayChar: 'אִ',
-    baseLetterNote: '字母正下方一颗单点 (ִ)',
+    nameZh: '希里克 (בִּ / ◌ִ)',
+    displayChar: 'בִּ',
+    baseLetterNote: '标在辅音字母正下方，为单颗圆点 (בִּ / ◌ִ)',
     sound: 'I（像 "see" 中的 ee）',
     soundZh: '高前元音 "衣"，有时后接 Yod 构成长音。',
     exampleWord: 'אִמָּא',
     exampleWordMeaning: '妈妈 (Ima)',
     exampleRomanized: 'Ima',
-    audioUrl: 'https://raw.githubusercontent.com/fflushmail/xibo/refs/heads/main/audio/ima.mp3',
   },
 ]
 
@@ -514,7 +520,7 @@ export default function AlphabetPage() {
           </div>
         )}
 
-        {/* ── NIKUD VOWELS SECTION (Linguistically Corrected) ── */}
+        {/* ── NIKUD VOWELS SECTION (Refined) ── */}
         {showVowels && (
           <div className="px-5 pb-6">
             <div className="glass-card p-4 mb-3 border-l-4 border-l-sky-blue">
@@ -522,9 +528,9 @@ export default function AlphabetPage() {
                 希伯来语元音符号规则说明
               </p>
               <p className="chinese text-gray-600 text-xs leading-relaxed">
-                现代希伯来语报纸、手机和招牌基本<strong>不写元音符号</strong>（无点文本 Ktiv Chaser）。
-                元音符号（Nikud）主要用于初学教学、词典和儿童读物。<br />
-                <strong>特别注意：</strong>元音 <strong>Shuruk (וּ)</strong> 和 <strong>Cholam Male (וֹ)</strong> 是将点标记在辅音字母 <strong>Vav (ו)</strong> 上，而不是标在 Alef 上！
+                现代希伯来语报纸、手机和街头招牌通常<strong>不标写元音符号</strong>（无点文本 Ktiv Chaser），
+                元音符号（Nikud）主要用于初学教学、字典及儿童读物。<br />
+                <strong>字母 Vav 构成的元音：</strong>元音 <strong>Shuruk (וּ)</strong> 和 <strong>Cholam Male (וֹ)</strong> 直接标记在辅音字母 <strong>Vav (ו)</strong> 上，点分别置于 Vav 的中间与顶端。
               </p>
             </div>
 
@@ -549,30 +555,51 @@ export default function AlphabetPage() {
                       </div>
 
                       <p className="chinese text-[11px] text-sky-blue font-semibold mb-1">{v.baseLetterNote}</p>
-                      <p className="chinese text-gray-600 text-xs leading-relaxed">{v.soundZh}</p>
+                      <p className="chinese text-gray-600 text-xs leading-relaxed whitespace-pre-line">{v.soundZh}</p>
                     </div>
                   </div>
 
-                  {/* Practical Example Word with Audio Player */}
-                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between bg-sand/60 rounded-xl px-3 py-2">
-                    <div>
-                      <span className="text-[10px] text-gray-400 chinese block">实用词例 Example</span>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="hebrew text-xl font-black text-gray-800">{v.exampleWord}</span>
-                        <span className="chinese text-xs text-gray-600">({v.exampleWordMeaning})</span>
+                  {/* If this is Shva, show the two distinct sub-categories clearly: Shva Nach vs Shva Na */}
+                  {v.isShva ? (
+                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                      <p className="text-[11px] text-gray-500 chinese font-bold">📖 两种不同用法示例对照：</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {/* Shva Nach */}
+                        <div className="bg-amber-50/70 border border-amber-200/60 rounded-xl p-2.5">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-amber-800 chinese">静音停顿 (Shva Nach)</span>
+                            <span className="hebrew text-lg font-black text-deep-blue">{v.shvaNachWord}</span>
+                          </div>
+                          <p className="text-[11px] text-gray-600 chinese">{v.shvaNachMeaning}</p>
+                          <p className="text-[10px] text-amber-700 mt-0.5 chinese">{v.shvaNachNote}</p>
+                        </div>
+
+                        {/* Shva Na */}
+                        <div className="bg-sky-50/70 border border-sky-200/60 rounded-xl p-2.5">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-sky-800 chinese">弱元音 e (Shva Na)</span>
+                            <span className="hebrew text-lg font-black text-deep-blue">{v.shvaNaWord}</span>
+                          </div>
+                          <p className="text-[11px] text-gray-600 chinese">{v.shvaNaMeaning}</p>
+                          <p className="text-[10px] text-sky-700 mt-0.5 chinese">{v.shvaNaNote}</p>
+                        </div>
                       </div>
                     </div>
-
-                    {v.audioUrl ? (
-                      <div className="flex-shrink-0">
-                        <AudioPlayer url={v.audioUrl} size="sm" />
+                  ) : (
+                    /* Standard Example Word Display (clean text without standalone audio button) */
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between bg-sand/60 rounded-xl px-3.5 py-2.5">
+                      <div>
+                        <span className="text-[10px] text-gray-400 chinese block">实用词例 Example</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="hebrew text-xl font-black text-gray-800">{v.exampleWord}</span>
+                          <span className="chinese text-xs text-gray-600">({v.exampleWordMeaning})</span>
+                        </div>
                       </div>
-                    ) : (
-                      <span className="text-[11px] text-gray-400 chinese bg-white px-2 py-1 rounded-md border border-gray-200">
+                      <span className="text-xs text-deep-blue/80 font-mono bg-white px-2.5 py-1 rounded-md border border-gray-200">
                         /{v.exampleRomanized}/
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -581,11 +608,11 @@ export default function AlphabetPage() {
               <p className="chinese font-bold text-deep-blue text-xs mb-1">
                 📌 学习总结与母语者发音规律：
               </p>
-              <ul className="chinese text-gray-600 text-xs space-y-1 list-disc list-inside leading-relaxed">
-                <li><strong>Kamatz (ָ) 与 Patach (ַ)</strong>：现代希伯来语均发 "A" 音。</li>
-                <li><strong>Tsere (ֵ) 与 Segol (ֶ)</strong>：现代希伯来语均发 "E" 音。</li>
-                <li><strong>Shuruk (וּ) 与 Kubutz (ֻ)</strong>：均发 "U" 音，Shuruk 用 Vav，Kubutz 是三个斜点。</li>
-                <li><strong>Shva (ְ)</strong>：句首常发弱短 e，字尾多为静音停顿。</li>
+              <ul className="chinese text-gray-600 text-xs space-y-1.5 list-disc list-inside leading-relaxed">
+                <li><strong>Kamatz (בָּ / ◌ָ) 与 Patach (בַּ / ◌ַ)</strong>：现代希伯来语发音一致，均发 "A" 开口音。</li>
+                <li><strong>Tsere (בֵּ / ◌ֵ) 与 Segol (בֶּ / ◌ֶ)</strong>：现代希伯来语发音一致，均发 "E" 音。</li>
+                <li><strong>Shuruk (וּ) 与 Kubutz (בֻּ / ◌ֻ)</strong>：均发 "U" 音，Shuruk 置于字母 Vav (ו) 上，Kubutz 为斜排三点。</li>
+                <li><strong>Shva (בְּ / ◌ְ)</strong>：词中闭音节为静音停顿 (Shva Nach)，词首等位置为短促轻弱 e (Shva Na)。</li>
               </ul>
             </div>
           </div>

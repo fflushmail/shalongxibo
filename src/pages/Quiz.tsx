@@ -55,7 +55,7 @@ function buildMCQuestions(words: Word[], count = 10): MCQuestion[] {
 
 export default function Quiz() {
   const [mode, setMode] = useState<QuizMode>('multiple-choice')
-  const { markLearned } = useProgress()
+  const { markLearned, recordQuizResult } = useProgress()
 
   // MC state
   const [questions, setQuestions] = useState<MCQuestion[]>([])
@@ -63,6 +63,12 @@ export default function Quiz() {
   const [selected, setSelected] = useState<string | null>(null)
   const [score, setScore] = useState(0)
   const [finished, setFinished] = useState(false)
+
+  useEffect(() => {
+    if (finished && questions.length > 0) {
+      recordQuizResult(score, questions.length)
+    }
+  }, [finished, score, questions.length, recordQuizResult])
 
   // Self-assess state
   const [saWords, setSaWords] = useState<Word[]>([])

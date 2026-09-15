@@ -1,16 +1,3 @@
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  limit,
-  serverTimestamp,
-  type Timestamp,
-} from 'firebase/firestore'
-import { db } from '../firebase'
-
 // ── Types ──────────────────────────────────────────────────────────────────
 export interface QuestionRecord {
   questionIndex: number
@@ -34,10 +21,10 @@ export interface GameReplay {
   accuracy: number
   avgResponseMs: number
   questions: QuestionRecord[]
-  createdAt: Timestamp | null
+  createdAt: number
 }
 
-const REPLAYS_COL = 'game_replays'
+const LOCAL_REPLAYS_KEY = 'shalong_local_game_replays'
 
 // Human-style avatar emojis — never show a robot for real players
 const HUMAN_AVATARS = ['🧑', '👨', '👩', '🧑‍💻', '👨‍🎓', '👩‍🎓', '🧑‍🏫', '👤']
@@ -46,7 +33,7 @@ export function randomHumanAvatar(): string {
   return HUMAN_AVATARS[Math.floor(Math.random() * HUMAN_AVATARS.length)]
 }
 
-// ── Save a replay after a match ───────────────────────────────────────────
+// ── Save a replay locally in localStorage ──────────────────────────────────
 export async function saveReplay(
   userId: string,
   displayName: string,
@@ -58,53 +45,43 @@ export async function saveReplay(
     const avgResponseMs =
       questions.reduce((sum, q) => sum + q.timeToAnswerMs, 0) / (questions.length || 1)
 
-    await addDoc(collection(db, REPLAYS_COL), {
+    const newReplay: GameReplay = {
+      id: 'replay_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       userId,
-      displayName,
+      displayName: displayName || '学习者',
       avatarEmoji: randomHumanAvatar(),
       score,
       totalQuestions: questions.length,
       accuracy,
       avgResponseMs,
       questions,
-      createdAt: serverTimestamp(),
-    })
+      createdAt: Date.now(),
+    }
+
+    const saved = localStorage.getItem(LOCAL_REPLAYS_KEY)
+    const list: GameReplay[] = saved ? JSON.parse(saved) : []
+    // Keep last 30 replays
+    list.unshift(newReplay)
+    if (list.length > 30) list.length = 30
+    localStorage.setItem(LOCAL_REPLAYS_KEY, JSON.stringify(list))
   } catch (err) {
-    console.warn('Failed to save replay:', err)
+    console.warn('Failed to save local replay:', err)
   }
 }
 
-// ── Fetch a random replay from another user ───────────────────────────────
-export async function fetchRandomReplay(currentUserId: string): Promise<GameReplay | null> {
+// ── Fetch a random replay from local history ──────────────────────────────
+export async function fetchRandomReplay(_currentUserId: string): Promise<GameReplay | null> {
   try {
-    const q = query(
-      collection(db, REPLAYS_COL),
-      where('userId', '!=', currentUserId),
-      orderBy('userId'),
-      orderBy('createdAt', 'desc'),
-      limit(20),
-    )
-    const snap = await getDocs(q)
-    if (snap.empty) return null
+    const saved = localStorage.getItem(LOCAL_REPLAYS_KEY)
+    if (!saved) return null
+    const list: GameReplay[] = JSON.parse(saved)
+    if (!Array.isArray(list) || list.length === 0) return null
 
-    const docs = snap.docs
-    const chosen = docs[Math.floor(Math.random() * docs.length)]
-    const data = chosen.data()
-
-    return {
-      id: chosen.id,
-      userId: data.userId,
-      displayName: data.displayName || '真实玩家',
-      avatarEmoji: data.avatarEmoji || randomHumanAvatar(),
-      score: data.score ?? 0,
-      totalQuestions: data.totalQuestions ?? 0,
-      accuracy: data.accuracy ?? 0.75,
-      avgResponseMs: data.avgResponseMs ?? 2500,
-      questions: (data.questions ?? []) as QuestionRecord[],
-      createdAt: data.createdAt ?? null,
-    } satisfies GameReplay
+    // Pick a random replay
+    const chosen = list[Math.floor(Math.random() * list.length)]
+    return chosen
   } catch (err) {
-    console.warn('Failed to fetch replay:', err)
+    console.warn('Failed to fetch local replay:', err)
     return null
   }
 }
@@ -113,8 +90,10 @@ export async function fetchRandomReplay(currentUserId: string): Promise<GameRepl
 const FAKE_NAMES = [
   '王小明', '李华', '张伟', '陈亮', '刘波',
   '杨帆', '赵磊', '孙明', '周强', '吴涛',
-  '郑建国', '冯永', '林晓', '何勇', '谢峰',
+  '小静', '阿雅', '芳芳', '志强', '建国',
+  '阿龙', '海燕', '晓东', '婷婷', '文博',
 ]
+
 export function fakeBotName(): string {
   return FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)]
 }
